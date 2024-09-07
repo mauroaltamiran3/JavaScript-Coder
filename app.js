@@ -133,6 +133,7 @@ const app = () => {
         loop = false; // Una vez elegido o no el servicio extra, se entrega la alerta.
         
     }
+    
 
     const alerta = () =>{ // Creé la función para mostrar o no serviciosAgregadosExtra, ya que es opcional.
         if (serviciosAgregadosExtra == 0) {
