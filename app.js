@@ -62,11 +62,11 @@ const totalCarrito = () => { // Obtengo los valores por separados para darles un
 
 const aplicarDescuento = (precioTotal, cantidadServicios) => { // En totalCarrito tomo el parámetro precioTotal y el array serviciosAgregados en este caso.
     if (cantidadServicios === 2) {
-        return `${precioTotal * 0.85} (15% descuento por llevar 2 servicios)`;
+        return `${precioTotal * 0.85} (15% descuento aplicado por llevar 2 servicios)`;
     } else if (cantidadServicios === 3) {
-        return `${precioTotal * 0.80} (20% descuento por llevar 3 servicios)`;
+        return `${precioTotal * 0.80} (20% descuento aplicado por llevar 3 servicios)`;
     } else if (cantidadServicios > 3) {
-        return `${precioTotal * 0.75} (25% descuento por llevar 4 o más servicios)`;
+        return `${precioTotal * 0.75} (25% descuento aplicado por llevar 4 o más servicios)`;
     }
     return precioTotal;
 }
@@ -84,7 +84,7 @@ const validarServicioId = (arrayDeseado, mensajeServicio) => {
     while (loopValidar) {
         let servicioId = parseInt(prompt(`Elegir el servicio según su número:\n${mensajeServicio}`));
 
-        if (isNaN(servicioId) || servicioId >= arrayDeseado.length) {
+        if (isNaN(servicioId) || servicioId >= arrayDeseado.length || servicioId < 0) {
             alert('Ingrese un servicio válido.');
         } else {
             return servicioId; // Retorna el valor válido
@@ -92,18 +92,15 @@ const validarServicioId = (arrayDeseado, mensajeServicio) => {
     }
 }
 
-const validarServicioExtra = () => {
-    let loopValidarExtra = true;
-    while(loopValidarExtra && extrasServicios.length !== 0) {
-        let servicioId = validarServicioId(extrasServicios,mensajeServicio(extrasServicios));
+const validarCantidad = () => {
+    let loopCantidad = true;
+    while(loopCantidad) {
         let cantidad = parseInt(prompt('Elegir una cantidad entre 1 y 10.'));
-
         if (!isNaN(cantidad) && cantidad > 0 && cantidad <= 10) {
-            agregarServicioExtra(extrasServicios[servicioId],cantidad); // Envío el índice del array extrasServicios
-            extrasServicios.splice(servicioId, 1)
-            loopValidarExtra = confirm('¿Desea elegir otro servicio extra?')
+            return cantidad;
         } else {
-            alert('Ingresar una cantidad válida.')
+            alert('Ingresar una cantidad válida.');
+            loopCantidad = true;
         }
     }
 }
@@ -128,10 +125,21 @@ const app = () => {
 
         let agregarExtra = confirm(`¿Deseas agregar un servicio extra?`);
         if (agregarExtra) {
-            validarServicioExtra(); // Llamado a la función que hace la validación y agrega el servicio al array extrasServicios.
+            let loopElegirServicio = true;
+            while( loopElegirServicio ) {
+                if( extrasServicios.length !== 0) {
+                    let servicioId = validarServicioId(extrasServicios, mensajeServicio(extrasServicios)); // Envío el array a validar y su respectivo mensaje dentro de otra función (mensajeServicio).
+                    let cantidad = validarCantidad(); // Cree la función para validar la cantidad
+                    agregarServicioExtra(extrasServicios[servicioId], cantidad); // Lo agrego al array principal una vez validado y elegido.
+                    extrasServicios.splice(servicioId, 1); // Elimino el elemento para volver a preguntar y que no lo vuelva a elegir.
+                    loopElegirServicio = confirm(`¿Deseas agregar un servicio extra?`);
+                } else {
+                    loopElegirServicio = false;
+                }
+            }
         }
-        loop = false; // Una vez elegido o no el servicio extra, se entrega la alerta.
-        
+
+        loop = false; 
     }
 
     const alerta = () =>{ // Creé la función para mostrar o no serviciosAgregadosExtra, ya que es opcional.
