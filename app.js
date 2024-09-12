@@ -13,10 +13,7 @@ const extrasServicios = [
 
 const serviciosAgregados = [];
 const serviciosAgregadosExtra = [];
-
-const agregarServicio = (servicioBase) => { // Recibe el parámetro baseServicios[servicioId].
-    serviciosAgregados.push(servicioBase);
-}
+const arrayCombinado = [];
 
 const agregarServicioExtra = (servicioExtra,cantidad) => { // Agregar servicio extra al array serviciosAgregadosExtra
     const infoServicioExtra = {
@@ -27,36 +24,41 @@ const agregarServicioExtra = (servicioExtra,cantidad) => { // Agregar servicio e
     serviciosAgregadosExtra.push(infoServicioExtra);
 }
 
-const listarServicios = (arrayConAgregados) => { // También solicito el argumento servicio que me entrega el array que le pido al final para mostrar.
-    let lista = '';                      // Acá creo una lista de los servicios extras para mostrarlo en la alerta final.
-    for (let i = 0; i < arrayConAgregados.length; i++) {
-        if (arrayConAgregados == serviciosAgregadosExtra) { // Validación para poder aclarar la cantidad del servicio extra.
-            lista += `\n* ${arrayConAgregados[i].nombre} (${arrayConAgregados[i].cantidad})`;
+const agregarServiciosTotales = (arrayServicio) => {
+    const infoServicio = {
+        nombre: arrayServicio.nombre,
+    }
+    arrayCombinado.push(infoServicio);
+}
+
+const listarServicios = (arrayConAgregados) => {
+    let lista = '';
+
+    for(const servicio of arrayConAgregados) {
+        if(servicio == serviciosAgregadosExtra) {
+            lista += `\n* ${servicio.nombre} (${servicio.cantidad})`;
         } else {
-            lista += `\n* ${arrayConAgregados[i].nombre}`;
+            lista += `\n* ${servicio.nombre}`;
         }
     }
     return lista;
 }
 
-const totalCarritoExtra = () => { //Obtengo el precio del servicio extra
-    let montoExtra = 0;
-    for (let i = 0; i < serviciosAgregadosExtra.length; i++) {
-        montoExtra += serviciosAgregadosExtra[i].precio * serviciosAgregadosExtra[i].cantidad;
+const totalCarrito = (arrayServicio) => { // Resumí ambos carritos en uno solo y apliqué el for of.
+    let monto = 0;
+
+    for( let servicio of arrayServicio ){
+        if(arrayServicio == serviciosAgregadosExtra) {
+            monto += servicio.precio * servicio.cantidad;
+        } else {
+            monto += servicio.precio;
+        }
     }
-    return montoExtra;
+    return monto;
 }
 
-const totalCarritoBase = () => { // Obtengo el precio de los servicios principals
-    let montoBase = 0;
-    for (let i = 0; i < serviciosAgregados.length; i++) {
-        montoBase += serviciosAgregados[i].precio;
-    }
-    return montoBase;
-}
-
-const totalCarrito = () => { // Obtengo los valores por separados para darles un total y aplicarle descuento si corresponde.
-    let precioTotal = totalCarritoBase() + totalCarritoExtra();
+const montoTotalCarrito = () => { // Obtengo los valores por separados para darles un total y aplicarle descuento si corresponde.
+    let precioTotal = totalCarrito(serviciosAgregados) + totalCarrito(serviciosAgregadosExtra);
     return aplicarDescuento(precioTotal, serviciosAgregados.length);
 }
 
@@ -71,11 +73,24 @@ const aplicarDescuento = (precioTotal, cantidadServicios) => { // En totalCarrit
     return precioTotal;
 }
 
-const mensajeServicio = (arrayAListar) => { // El mensaje que recibe argumento del array para hacer la muestra de servicios disponibles para seleccionar.
+let lengthInicialArray; // Declaro el valor por fuera para que no se recalcule la variable y solo guarde el valor original antes de los splice
+const mensajeServicio = (arrayAListar) => { 
     let mensaje = '';
-    for (let i = 0; i < arrayAListar.length; i++) {
-        mensaje += `\n ${i}- ${arrayAListar[i].nombre} $${arrayAListar[i].precio}.`;
+    let indice = 0; // voy marcando el índice
+
+    if (!lengthInicialArray) { // Le cambio el valor null o undefined por el length del array por única vez, ya que deja de ser null.
+        lengthInicialArray = arrayAListar.length;
     }
+
+    for (const servicio of arrayAListar) { // Uso el for of
+        mensaje += `\n ${indice}- ${servicio.nombre} $${servicio.precio}`;
+        indice++; // lo incremento
+    }
+
+    if(arrayAListar.length < lengthInicialArray) {
+        mensaje += `\n\n 9- Volver`
+    }
+    
     return mensaje;
 }
 
@@ -84,9 +99,11 @@ const validarServicioId = (arrayDeseado, mensajeServicio) => {
     while (loopValidar) {
         let servicioId = parseInt(prompt(`Elegir el servicio según su número:\n${mensajeServicio}`));
 
-        if (isNaN(servicioId) || servicioId >= arrayDeseado.length || servicioId < 0) {
+        if (servicioId === 9) {
+            return servicioId;
+        } else if (isNaN(servicioId) || servicioId >= arrayDeseado.length || servicioId < 0) {
             alert('Ingrese un servicio válido.');
-        } else {
+        } else { 
             return servicioId; // Retorna el valor válido
         }
     }
@@ -105,51 +122,88 @@ const validarCantidad = () => {
     }
 }
 
+const eliminarServicio = (arrayServicio) => { // Función para eliminar en caso que desee algún servicio elegido.
+    let loopEliminar = true;
+    while(loopEliminar) {
+        let servicioId = validarServicioId(arrayServicio, mensajeServicio(arrayServicio));
+        arrayServicio.splice(servicioId,1);
+
+        if( arrayServicio.length == 0) {
+            loopEliminar = false;
+        } else {
+            loopEliminar = confirm('¿Deseas eliminar otro servicio?')
+        }
+    }
+}
+
 const app = () => {
     alert("¡Bienvenidos a LuManicuría!\n\n¡Descuentos hasta el 20% combinando servicios!");
 
     let loop = true;
     while(loop) {
-        
+    // Agregar servicio principal
+
         let loopElegirServicio = true;
-        while( loopElegirServicio ) {
-            if( baseServicios.length !== 0) {
-                let servicioId = validarServicioId(baseServicios, mensajeServicio(baseServicios)); // Envío el array a validar y su respectivo mensaje dentro de otra función (mensajeServicio).
-                agregarServicio(baseServicios[servicioId]); // Lo agrego al array principal una vez validado y elegido.
-                loopElegirServicio = confirm(`Elegiste ${baseServicios[servicioId].nombre}\n\n ¿Desea elegir otro servicio principal?`);
-                baseServicios.splice(servicioId, 1); // Elimino el elemento para volver a preguntar y que no lo vuelva a elegir.
+        while( loopElegirServicio && baseServicios.length != 0 ) {
+            let servicioId = validarServicioId(baseServicios, mensajeServicio(baseServicios)); // Envío el array a validar y su respectivo mensaje dentro de otra función (mensajeServicio).
+
+            if ( servicioId === 9 ) { // Opción para volver hacia atrás
+                loopElegirServicio = true;
             } else {
-                loopElegirServicio = false;
+                serviciosAgregados.push(baseServicios[servicioId]); // Lo agrego al array principal una vez validado y elegido.
+                agregarServiciosTotales(baseServicios[servicioId]);
+            }
+
+            loopElegirServicio = confirm(`¿Desea elegir otro servicio principal?`);
+            baseServicios.splice(servicioId, 1); // Elimino el elemento para volver a preguntar y que no lo vuelva a elegir.
+        }
+
+    // Agregar servicio extra 
+
+        let loopElegirServicioExtra = confirm(`¿Deseas agregar un servicio extra?`);
+        while( loopElegirServicioExtra ) {
+            let servicioId = validarServicioId(extrasServicios, mensajeServicio(extrasServicios)); // Envío el array a validar y su respectivo mensaje dentro de otra función (mensajeServicio).
+
+            if ( servicioId === 9 ) { // Opción para volver hacia atrás
+                loopElegirServicio = true;
+            } else {
+                let cantidad = validarCantidad(); // Cree la función para validar la cantidad
+                agregarServicioExtra(extrasServicios[servicioId], cantidad); // Lo agrego al array principal una vez validado y elegido.
+                agregarServiciosTotales(extrasServicios[servicioId]);
+            }
+
+            extrasServicios.splice(servicioId, 1); // Elimino el elemento para volver a preguntar y que no lo vuelva a elegir.
+
+
+            if ( extrasServicios.length == 0) { //Solucionar para que no me vuelva a pedir servicio extra si está vacío el array
+                loopElegirServicioExtra = false;
+            } else {
+                loopElegirServicioExtra = confirm(`¿Deseas agregar un servicio extra?`);
             }
         }
 
-        let agregarExtra = confirm(`¿Deseas agregar un servicio extra?`);
-        if (agregarExtra) {
-            let loopElegirServicio = true;
-            while( loopElegirServicio ) {
-                if( extrasServicios.length !== 0) {
-                    let servicioId = validarServicioId(extrasServicios, mensajeServicio(extrasServicios)); // Envío el array a validar y su respectivo mensaje dentro de otra función (mensajeServicio).
-                    let cantidad = validarCantidad(); // Cree la función para validar la cantidad
-                    agregarServicioExtra(extrasServicios[servicioId], cantidad); // Lo agrego al array principal una vez validado y elegido.
-                    extrasServicios.splice(servicioId, 1); // Elimino el elemento para volver a preguntar y que no lo vuelva a elegir.
-                    loopElegirServicio = confirm(`¿Deseas agregar un servicio extra?`);
-                } else {
-                    loopElegirServicio = false;
-                }
-            }
+        let loopEliminar = confirm(`¿Deseas eliminar algún servicio Principal?`);
+        while (loopEliminar) { // Eliminar servicio en caso de quererlo
+            eliminarServicio(serviciosAgregados);
+            loopEliminar = false;
         }
 
-        loop = false; 
+        let loopEliminarExtra = confirm(`¿Deseas eliminar algún servicio extra?`);
+        while(loopEliminarExtra) { // Eliminar servicio en caso de quererlo
+            eliminarServicio(serviciosAgregadosExtra);
+            loopEliminarExtra = false;
+        }
+        loop = false;
     }
 
     const alerta = () =>{ // Creé la función para mostrar o no serviciosAgregadosExtra, ya que es opcional.
         if (serviciosAgregadosExtra == 0) {
-            alert(`Elegiste los servicios: ${listarServicios(serviciosAgregados)}\n\nServicios: $${totalCarritoBase()}\n\n*--- El total a abonar es de $${totalCarrito()} ---*`);
+            alert(`Elegiste los servicios: ${listarServicios(serviciosAgregados)}\n\nServicios: $${totalCarrito(serviciosAgregados)}\n\n*--- El total a abonar es de $${montoTotalCarrito()} ---*`);
         } else {
             alert(`Elegiste los servicios: ${listarServicios(serviciosAgregados)}
-            Servicios base: $${totalCarritoBase()}\n\nElegiste el servicio extra:${listarServicios(serviciosAgregadosExtra)}
-            Servicios Extras: $${totalCarritoExtra()}\n
-            *--- El total a abonar es de $${totalCarrito()} ---*`);
+            Servicios base: $${totalCarrito(serviciosAgregados)}\n\nElegiste el servicio extra:${listarServicios(serviciosAgregadosExtra)}
+            Servicios Extras: $${totalCarrito(serviciosAgregadosExtra)}\n
+            *--- El total a abonar es de $${montoTotalCarrito()} ---*`);
         }
     } 
     
