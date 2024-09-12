@@ -1,6 +1,6 @@
 **Programa para pedir turnos de manicuría con valores finales y descuentos.**
 
--Funciones de listas: Podés seleccionar varias opciones y cantidades
+-Funciones de listas: Podés seleccionar varias opciones y cantidades/n
 -Servicios Bases y Extras.
 -Función para volver atrás.
 -Función para eliminar servicios añadidos.
