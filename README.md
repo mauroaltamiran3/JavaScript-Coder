@@ -1,5 +1,8 @@
-La función principal del programa es hacer un pedido de manicuría.
+**Programa para pedir turnos de manicuría con valores finales y descuentos.**
 
-Se solicita uno o varias servicios principales, con la opción de agregar servicios extras en cantidad de uñas.
-
-Por último, entrega el pedido detallado con su monto respectivo y aplicado un descuento en caso de adquirir servicios principales en cantidad.
+-Funciones de listas: Podés seleccionar varias opciones y cantidades
+-Servicios Bases y Extras.
+-Función para volver atrás.
+-Función para eliminar servicios añadidos.
+-Función final para entregar el total con los servicios por separados y juntos con descuento en caso de aplicarse.
+-No se usa DOM.
